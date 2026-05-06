@@ -5,6 +5,49 @@ All notable changes to this project.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.15.0] — 2026-05-06
+
+Minor release. Adds a production dashboard TUI for installed agentic-stack
+projects, with the trust-console inspection surface folded into the same
+user-facing entrypoint.
+
+### Added
+- **`agentic-stack dashboard` / `dash`.** Adds a terminal dashboard for project
+  health, installed adapters, doctor checks, harness verification, memory, team
+  brain, skills, managed instances, transfer, and local data exports.
+- **Trust-console parity.** The dashboard includes a per-harness verify matrix,
+  team brain status/init, skills listing, active instance listing,
+  accepted/rejected memory review, and `memory_why()` evidence lookup.
+- **Plain renderer.** `agentic-stack dashboard --plain` and non-TTY fallback
+  produce a script-safe text dashboard for logs, agents, and tests.
+- **Interactive dashboard coverage.** Adds local tests for renderer output,
+  CLI aliases, trust-console parity sections, non-TTY fallback, up/down
+  navigation, refresh, quit, and Enter-open behavior.
+
+### Changed
+- Bare interactive `agentic-stack` / `./install.sh` opens the dashboard when an
+  existing `.agent/install.json` is present. Non-TTY shells keep printing
+  command guidance instead of launching an interactive UI.
+- README, POSIX installer help, and PowerShell installer help now document the
+  dashboard entrypoint.
+
+### Fixed
+- `test_claude_code_hook.py` now works both as a standalone validation script
+  and as a pytest-collected module by providing a real `mod` fixture.
+
+### Migration
+No migration required. Existing projects can run `agentic-stack dashboard`
+after upgrading. Re-run an adapter install only if you want the latest copied
+adapter guidance files in a project.
+
+### Release
+- Tag `v0.15.0` cut from master.
+- GitHub release: <https://github.com/codejunkie99/agentic-stack/releases/tag/v0.15.0>
+- `Formula/agentic-stack.rb` bumped to v0.15.0 in a follow-up commit after
+  the tag tarball existed and its sha256 could be computed.
+- Tarball sha256:
+  `e3fe0dde7a9997086a378123a365eced5514ad1a68871b294195fbf514611131`.
+
 ## [0.13.0] — 2026-05-02
 
 Minor release. Adds an onboarding-style transfer wizard for moving a portable
