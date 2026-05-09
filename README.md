@@ -25,22 +25,23 @@ metrics without training a model or sending telemetry.
   <img src="docs/diagram.svg" alt="agentic-stack architecture" width="880"/>
 </p>
 
-### New in v0.15.0 — dashboard TUI
+### New in v0.16.0 — safe project upgrades
 
-Minor release. Adds `agentic-stack dashboard` as the production front door for
-installed projects: one terminal screen for health, adapters, verification,
-memory, team brain, skills, instances, transfer, and local dashboard exports.
+Minor release. Adds `agentic-stack upgrade` and `agentic-stack sync-manifest`
+so installed projects can pick up new `.agent` infrastructure and skill
+metadata without clobbering adapter settings or user memory.
 
-- **Dashboard command.** Run `agentic-stack dashboard` or `./install.sh dashboard`
-  to open the TUI; use `dash` or `--plain` for a compact script-safe view.
-- **Trust-console parity.** The dashboard includes a per-harness verify matrix,
-  accepted/rejected memory, `memory_why()` evidence lookup, team brain
-  status/init, skills, and managed instances.
-- **Safer installed-project default.** Bare interactive `./install.sh` opens the
-  dashboard once `.agent/install.json` exists; non-TTY shells still print
-  script-safe command guidance instead of launching a TUI.
-- **Production coverage.** Renderer, CLI, parity, non-TTY fallback, and
-  interactive keypress navigation are covered by local tests.
+- **Safe upgrade command.** Run `agentic-stack upgrade --dry-run` to preview
+  skeleton-owned `.agent` file updates, then `agentic-stack upgrade --yes` to
+  apply them.
+- **Manifest repair.** Run `agentic-stack sync-manifest` to rebuild
+  `.agent/skills/_manifest.jsonl` from installed `SKILL.md` frontmatter.
+- **No config overwrite.** Upgrade leaves `CLAUDE.md`, `.claude/settings.json`,
+  personal/semantic/episodic/working memory, candidates, and existing skill
+  directories untouched.
+- **Stricter doctor.** `agentic-stack doctor` now warns when Claude Code hook
+  commands point to missing `.agent` files or hook scripts are present but
+  unwired.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
@@ -154,6 +155,9 @@ verb-style subcommands (works with both `install.sh` and `install.ps1`):
 ./install.sh doctor              # read-only audit; green / yellow / red per adapter
 ./install.sh manage              # interactive TUI: header pane + menu loop for add/remove/audit
 ./install.sh transfer            # onboarding-style wizard: export/import memory as a curl bridge
+./install.sh upgrade --dry-run   # preview safe .agent infrastructure refresh
+./install.sh upgrade --yes       # copy latest harness/memory/tools + new skills
+./install.sh sync-manifest       # rebuild .agent/skills/_manifest.jsonl from SKILL.md frontmatter
 ./install.sh remove cursor       # confirm prompt + delete; no quarantine, no undo
 ```
 
@@ -171,6 +175,16 @@ Upgrading from pre-v0.9? Run `./install.sh doctor` first — it
 synthesizes `install.json` from on-disk adapter signals so the new
 backend can track them. Installing on top without migration would
 orphan the prior installs.
+
+Upgrading an already-installed project after `brew upgrade`? Run
+`agentic-stack upgrade --dry-run` in the project first, then
+`agentic-stack upgrade --yes` to refresh only skeleton-owned `.agent`
+infrastructure (`harness/**/*.py`, top-level `memory/*.py`, `tools/*.py`,
+the generated skill index, and new skill directories). It does not rewrite
+`CLAUDE.md`, `.claude/settings.json`, personal/semantic/episodic/working
+memory, candidates, or existing skill directories. `agentic-stack
+sync-manifest` is available as a repair command if `_manifest.jsonl` drifts
+from installed `SKILL.md` files.
 
 ## Onboarding wizard
 
@@ -375,6 +389,8 @@ harness_manager/                # v0.9.0 manifest-driven Python backend
 ├── transfer_tui.py             # onboarding-style memory transfer wizard
 ├── transfer_plan.py            # natural-language target/scope planning
 ├── transfer_bundle.py          # export/import bundle codec + merge logic
+├── skill_manifest.py           # rebuilds skills/_manifest.jsonl from SKILL.md
+├── upgrade.py                  # safe .agent infrastructure refresh
 └── cli.py                      # argparse dispatcher for install.sh / install.ps1
 
 docs/                           # architecture, getting-started, per-harness
