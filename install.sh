@@ -11,6 +11,8 @@
 #   ./install.sh doctor [target-dir]             # read-only audit
 #   ./install.sh status [target-dir]             # one-screen view
 #   ./install.sh dashboard [target-dir]          # interactive project dashboard
+#   ./install.sh mission-control [target-dir]    # beta local web dashboard
+#   ./install.sh brain status                    # optional external Brain integration
 #   ./install.sh manage [target-dir]             # interactive adapter TUI
 #   ./install.sh transfer                        # memory transfer wizard
 #   ./install.sh upgrade [target-dir] [--dry-run|--yes]
@@ -20,8 +22,9 @@
 #                                                # projects, dashboard for already
 #                                                # installed interactive projects
 #
-# adapter-name: claude-code | cursor | windsurf | opencode | openclaw |
-#               hermes | pi | codex | standalone-python | antigravity
+# adapter-name: claude-code | copilot-cli | cursor | gemini | windsurf |
+#               opencode | openclaw | hermes | pi | codex |
+#               standalone-python | antigravity
 #
 # All real logic lives in harness_manager/ (Python). This script is a
 # thin dispatcher so install.sh and install.ps1 share one backend.

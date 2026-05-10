@@ -5,6 +5,94 @@ All notable changes to this project.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.18.0] — 2026-05-10
+
+Minor release. Adds first-class integration with the external Brain CLI/MCP
+memory system while keeping agentic-stack's project-local `.agent/` runtime
+independent and optional.
+
+### Added
+- **Brain integration.** Adds `agentic-stack brain ...` and
+  `.agent/tools/brain_bridge.py` so projects can use the external
+  `codejunkie99/brain` CLI/MCP server as a git-backed long-term memory layer
+  without vendoring the Rust workspace into agentic-stack.
+- **Brain seed skill.** Adds a `brain` skill that teaches host agents when to
+  query or write Brain memory and how to avoid storing secrets.
+
+### Release
+- Tag `v0.18.0` cut from master.
+- GitHub release: <https://github.com/codejunkie99/agentic-stack/releases/tag/v0.18.0>
+- `Formula/agentic-stack.rb` bumped to v0.18.0 in a follow-up commit after
+  the tag tarball existed and its sha256 could be computed.
+- Tarball sha256:
+  `ef2d9d9209755e3dd1888064eae48a78add44b2140a78b7952664d7c4945ba85`.
+
+## [0.17.0] — 2026-05-10
+
+Minor release. Clears the open PR queue and ships new harness adapters, the
+Mission Control beta, semantic lesson retraction, and the consolidated pytest
+layout.
+
+### Added
+- **GitHub Copilot CLI adapter.** Installs `AGENTS.md`,
+  `.github/instructions/agentic-stack.instructions.md`,
+  `.github/hooks/agentic-stack.json`, and a `.github/skills/` mirror so Copilot
+  CLI can load the portable brain and run memory hooks.
+- **Google Gemini CLI adapter.** Installs `gemini.md` plus a `.gemini/skills/`
+  mirror for Gemini CLI projects.
+- **`agentic-stack mission-control`.** Adds a beta local web dashboard with a
+  snapshot mode, local-only event store, static assets, collectors, renderer,
+  and tests.
+- **Semantic lesson retraction.** Adds `.agent/tools/retract_lesson.py` so an
+  accepted lesson can be marked `status=retracted` with a required rationale
+  while preserving append-only `lessons.jsonl` history.
+
+### Changed
+- README, getting-started docs, POSIX installer help, and PowerShell installer
+  help now list all 12 adapters and the Mission Control command.
+- Proactive recall now considers only the latest append-only state for each
+  lesson id, excluding retracted lessons from future recall results.
+- `LESSONS.md` rendering deduplicates append-only lesson state by id so the
+  rendered markdown reflects the current status without losing audit history.
+- Tests now live under `tests/` with `pytest.ini`, including coverage for
+  Copilot CLI, Gemini, Mission Control, upgrades, onboarding, and lesson
+  retraction.
+
+### Release
+- Tag `v0.17.0` cut from master.
+- GitHub release: <https://github.com/codejunkie99/agentic-stack/releases/tag/v0.17.0>
+- `Formula/agentic-stack.rb` bumped to v0.17.0 in a follow-up commit after
+  the tag tarball existed and its sha256 could be computed.
+- Tarball sha256:
+  `704f8e7f05123b3791187e16f352936199e5e57e6855564c773961900ea13dd6`.
+
+## [0.16.1] — 2026-05-10
+
+Patch release. Ships the production-ready getting-started guide from PR #49
+and fixes stale version text in the onboarding banner.
+
+### Changed
+- `docs/getting-started.md` now leads with the Homebrew install path while
+  documenting source-checkout and PowerShell flows separately.
+- The guide now explains which commands are available through the global
+  `agentic-stack` wrapper and which source-checkout users should run through
+  `./install.sh`.
+- The guide now documents current project-management verbs, including
+  `dashboard`, `status`, `doctor`, `upgrade`, `sync-manifest`, `add`,
+  `remove`, and `manage`.
+
+### Fixed
+- The onboarding banner now derives its displayed version from
+  `harness_manager.__version__` instead of showing stale `v0.8.0` text.
+
+### Release
+- Tag `v0.16.1` cut from master.
+- GitHub release: <https://github.com/codejunkie99/agentic-stack/releases/tag/v0.16.1>
+- `Formula/agentic-stack.rb` bumped to v0.16.1 in a follow-up commit after
+  the tag tarball existed and its sha256 could be computed.
+- Tarball sha256:
+  `4dc3bfeb60b53895baf15b8fb0932245cb44c5d1d850ddc3474d83a38415b398`.
+
 ## [0.16.0] — 2026-05-09
 
 Minor release. Adds a safe installed-project upgrade path and repairs skill

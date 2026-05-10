@@ -2,7 +2,7 @@
 
 **Keep one portable memory-and-skills layer across coding-agent harnesses, so switching tools doesn't reset how your agent works.**
 
-A portable `.agent/` folder (memory + skills + protocols) that plugs into Claude Code, Cursor, Windsurf, OpenCode, OpenClaw, Hermes, Pi Coding Agent, Codex, Antigravity, or a DIY Python loop — and keeps its knowledge when you switch.
+A portable `.agent/` folder (memory + skills + protocols) that plugs into Claude Code, Cursor, Windsurf, OpenCode, OpenClaw, GitHub Copilot CLI, Google Gemini CLI, Hermes, Pi Coding Agent, Codex, Antigravity, or a DIY Python loop — and keeps its knowledge when you switch.
 
 It also includes a local data layer so you can monitor the whole suite of
 agents from one place: harness activity, cron runs, active agents, token/cost
@@ -25,7 +25,36 @@ metrics without training a model or sending telemetry.
   <img src="docs/diagram.svg" alt="agentic-stack architecture" width="880"/>
 </p>
 
-### New in v0.16.0 — safe project upgrades
+### New in v0.18.0 — external Brain memory integration
+
+Minor release. Adds an optional bridge to
+[`codejunkie99/brain`](https://github.com/codejunkie99/brain), the external
+git-backed long-term memory CLI/TUI/MCP server, without vendoring Brain's Rust
+workspace into agentic-stack.
+
+- **`agentic-stack brain ...`.** Check Brain status, onboard a project, search
+  global memory, write durable notes, run Brain doctor/TUI, or print the MCP
+  stdio command from the normal agentic-stack CLI.
+- **Project bridge.** Installed `.agent/` projects now include
+  `.agent/tools/brain_bridge.py`, so host agents can call Brain explicitly when
+  a task needs cross-project recall.
+- **Brain seed skill.** A new `brain` skill teaches agents when to query or
+  write Brain memory, and keeps secret handling explicit.
+
+See [CHANGELOG.md](CHANGELOG.md) for the full list.
+
+### v0.17.0 — adapters, Mission Control, and lesson retraction
+
+Minor release. Clears the open PR queue and ships the combined production
+surface from Copilot CLI, Gemini, Mission Control, and semantic lesson
+retraction work.
+
+### v0.16.1 — getting-started refresh
+
+Patch release. Ships the production-ready getting-started guide from PR #49
+and fixes onboarding version drift in the first-run banner.
+
+### v0.16.0 — safe project upgrades
 
 Minor release. Adds `agentic-stack upgrade` and `agentic-stack sync-manifest`
 so installed projects can pick up new `.agent` infrastructure and skill
@@ -42,8 +71,6 @@ metadata without clobbering adapter settings or user memory.
 - **Stricter doctor.** `agentic-stack doctor` now warns when Claude Code hook
   commands point to missing `.agent` files or hook scripts are present but
   unwired.
-
-See [CHANGELOG.md](CHANGELOG.md) for the full list.
 
 ### v0.12.0 — tldraw visual canvas
 
@@ -115,7 +142,7 @@ brew install agentic-stack
 # drop the brain into any project — the onboarding wizard runs automatically
 cd your-project
 agentic-stack claude-code
-# or: cursor | windsurf | opencode | openclaw | hermes | pi | codex | standalone-python | antigravity
+# or: cursor | windsurf | opencode | openclaw | copilot-cli | gemini | hermes | pi | codex | standalone-python | antigravity
 ```
 
 ### Windows (PowerShell)
@@ -140,7 +167,7 @@ agentic-stack dashboard
 git clone https://github.com/codejunkie99/agentic-stack.git
 cd agentic-stack && ./install.sh claude-code         # mac / linux / git-bash
 # or on Windows PowerShell: .\install.ps1 claude-code
-# adapters: claude-code | cursor | windsurf | opencode | openclaw | hermes | pi | codex | standalone-python | antigravity
+# adapters: claude-code | cursor | windsurf | opencode | openclaw | copilot-cli | gemini | hermes | pi | codex | standalone-python | antigravity
 ```
 
 ### Once installed: manage what's wired
@@ -150,6 +177,8 @@ verb-style subcommands (works with both `install.sh` and `install.ps1`):
 
 ```bash
 ./install.sh dashboard           # TUI dashboard: health, verify, memory, team, skills, instances
+./install.sh mission-control     # beta local web dashboard; Ctrl-C turns it off
+./install.sh brain status        # optional external Brain CLI integration
 ./install.sh add cursor          # add a second adapter (Claude Code + Cursor in same repo)
 ./install.sh status              # one-screen view: which adapters, brain stats
 ./install.sh doctor              # read-only audit; green / yellow / red per adapter
@@ -162,6 +191,32 @@ verb-style subcommands (works with both `install.sh` and `install.ps1`):
 ```
 
 PowerShell uses the same verbs, for example `.\install.ps1 dashboard`.
+
+### Optional: external Brain integration
+
+[`codejunkie99/brain`](https://github.com/codejunkie99/brain) is the
+git-backed long-term memory binary and MCP server. agentic-stack now treats it
+as an optional external memory layer instead of vendoring its Rust workspace.
+
+Install Brain first:
+
+```bash
+brew install codejunkie99/tap/brain
+```
+
+Then check or wire it from a project:
+
+```bash
+agentic-stack brain status
+agentic-stack brain onboard --agents codex,cursor --yes
+agentic-stack brain ask "auth decisions"
+agentic-stack brain note "Use PKCE for local OAuth flows."
+agentic-stack brain mcp-command
+```
+
+Installed `.agent/` projects also get `python3 .agent/tools/brain_bridge.py`
+and a `brain` seed skill so host agents can query or write Brain memory when a
+task needs cross-harness long-term recall.
 
 Bare `./install.sh` (no arguments) opens a **multi-select wizard** on
 a fresh project — check every harness you actually use, hit enter,
@@ -189,7 +244,7 @@ from installed `SKILL.md` files.
 ## Onboarding wizard
 
 If you ran bare `./install.sh` (no adapter name), the wizard starts
-with a **multi-select harness step**: it lists all 10 adapters, pre-
+with a **multi-select harness step**: it lists all 12 adapters, pre-
 checks any it detects on disk, and installs each one you confirm with
 space + enter. After the install(s), the preferences flow runs.
 
@@ -272,11 +327,15 @@ python3 .agent/tools/reject.py <id> --reason "too specific to generalize"
 
 # requeue a previously-rejected candidate
 python3 .agent/tools/reopen.py <id>
+
+# retract an accepted lesson from future recall/context (append-only audit)
+python3 .agent/tools/retract_lesson.py <lesson_id> --rationale "obsolete after migration"
 ```
 
 Graduated lessons land in `semantic/lessons.jsonl` (source of truth) and
 are rendered to `semantic/LESSONS.md`. Rejected candidates retain full
-decision history so recurring churn is visible, not fresh.
+decision history so recurring churn is visible, not fresh. Retracted lessons
+stay in history with `status=retracted` but are excluded from proactive recall.
 
 See [`docs/architecture.md`](docs/architecture.md) for the full lifecycle.
 
@@ -360,14 +419,18 @@ The index is stored at `.agent/memory/.index/` and gitignored.
     ├── show.py                 # colorful brain-state dashboard
     ├── data_layer_export.py    # local cross-harness dashboard/data export
     ├── data_flywheel_export.py # approved runs -> traces/cards/evals/JSONL
+    ├── brain_bridge.py         # bridge to external Brain CLI/MCP memory
     ├── list_candidates.py
     ├── graduate.py
     ├── reject.py
-    └── reopen.py
+    ├── reopen.py
+    └── retract_lesson.py       # append-only semantic lesson retraction
 
 adapters/                       # one small shim per harness, each with adapter.json manifest
 ├── claude-code/   (CLAUDE.md + settings.json hooks — $CLAUDE_PROJECT_DIR wired, closes #18)
+├── copilot-cli/   (AGENTS.md + .github/instructions/ + .github/hooks/ + .github/skills/ mirror)
 ├── cursor/        (.cursor/rules/*.mdc)
+├── gemini/        (gemini.md + .gemini/skills mirror)
 ├── windsurf/      (.windsurf/rules/*.md + legacy .windsurfrules)
 ├── opencode/      (AGENTS.md + opencode.json)
 ├── openclaw/      (AGENTS.md + system-prompt include; auto-registers per-project agent)
@@ -384,6 +447,12 @@ harness_manager/                # v0.9.0 manifest-driven Python backend
 ├── doctor.py                   # read-only audit + pre-v0.9 migration synthesis
 ├── remove.py                   # safe uninstall with shared-file detection + ownership handoff
 ├── dashboard_tui.py            # project dashboard for health/verify/memory/team/skills/instances
+├── mission_control.py          # beta local web dashboard entrypoint
+├── brain.py                    # optional external Brain CLI integration
+├── mission_control_collectors.py
+├── mission_control_render.py
+├── mission_control_server.py
+├── mission_control_static.py
 ├── post_install.py             # named built-ins (openclaw_register_workspace)
 ├── manage_tui.py               # interactive menu loop for add/remove/audit
 ├── transfer_tui.py             # onboarding-style memory transfer wizard
@@ -417,7 +486,9 @@ verify_codex_fixes.py           # v0.8.0 regression checks (33 checks)
 | Harness | Config file it reads | Hook support |
 |---|---|---|
 | **Claude Code** | `CLAUDE.md` + `.claude/settings.json` | yes (PostToolUse, Stop) |
+| **GitHub Copilot CLI** | `AGENTS.md` + `.github/instructions/*.instructions.md` | yes (postToolUse, sessionEnd) |
 | **Cursor** | `.cursor/rules/*.mdc` | no (manual reflect calls) |
+| **Google Gemini CLI** | `gemini.md` + `.gemini/skills/` | no (manual reflect calls) |
 | **Windsurf** | `.windsurfrules` | no (manual reflect calls) |
 | **OpenCode** | `AGENTS.md` + `opencode.json` | partial (permission rules) |
 | **OpenClaw** | `AGENTS.md` (auto-injected) + per-project `openclaw agents add --workspace` | varies by fork |
